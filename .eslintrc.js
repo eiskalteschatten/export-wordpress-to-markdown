@@ -1,6 +1,6 @@
 module.exports = {
   'env': {
-    'es6': true,
+    'es2022': true,
     'node': true,
   },
   'extends': [
@@ -8,7 +8,7 @@ module.exports = {
     'plugin:import/errors',
   ],
   'parserOptions': {
-    'ecmaVersion': 2018,
+    'ecmaVersion': 2022,
     'sourceType': 'module',
   },
   'plugins': [
