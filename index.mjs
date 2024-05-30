@@ -11,7 +11,8 @@ console.log('Exporting data from Wordpress...');
 
 const dataDirectory = path.resolve(process.cwd(), 'data');
 const categoriesFile = path.resolve(dataDirectory, 'categories.json');
-const authorsFile = path.resolve(dataDirectory, 'authors.json');
+const authorsDirectory = path.resolve(dataDirectory, 'authors');
+const authorsFile = path.resolve(authorsDirectory, 'authors.json');
 
 const authorsUrl = `${apiUrl}users`;
 const categoriesUrl = `${apiUrl}categories`;
@@ -27,6 +28,10 @@ if (!fs.existsSync(dataDirectory)) {
 
 async function fetchAuthors() {
   console.log('Exporting authors...');
+
+  if (!fs.existsSync(authorsDirectory)) {
+    await fs.promises.mkdir(authorsDirectory);
+  }
 
   let newAuthors = [];
 
@@ -55,7 +60,7 @@ async function fetchAuthors() {
 
       const extention = path.extname(author.avatar_urls[96]).split('&')[0];
       const avatarFile = `${author.slug}${extention}`;
-      const avatarFilePath = path.resolve(process.cwd(), 'public', 'images', 'authors', avatarFile);
+      const avatarFilePath = path.resolve(authorsDirectory, avatarFile);
       const imageDownloaded = await downloadImage(author.avatar_urls[96], avatarFilePath);
 
       if (!imageDownloaded) {
@@ -207,21 +212,21 @@ async function fetchPosts() {
       console.log('Exporting post:', postTitle);
 
       const pathToPostFolder = path.resolve(dataDirectory, 'posts', post.slug);
-      
+
       if (!fs.existsSync(pathToPostFolder)) {
         await fs.promises.mkdir(pathToPostFolder, { recursive: true });
       }
-      
+
       const postAuthor = authors.find(author => post.author === author.wordpressId);
       const postCategories = categories.filter(category => post.categories.includes(category.wordpressId));
-      
+
       const titleImageId = post.featured_media;
       const titleImageResponse = await fetch(`${mediaUrl}/${titleImageId}`);
       const titleImageJson = await titleImageResponse.json();
       const titleImage = await downloadPostImage(titleImageJson.source_url, pathToPostFolder);
-      
+
       const tags = [];
-      
+
       for (const tag of post.tags) {
         const tagId = await fetchTag(tag);
         tags.push(tagId);
