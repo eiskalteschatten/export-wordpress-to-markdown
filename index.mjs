@@ -14,7 +14,7 @@ import * as cheerio from 'cheerio';
 
 import { downloadImage, convertEscapedAscii, stripHtml } from './utils.mjs';
 
-const apiUrl = 'https://blog.alexseifert.com/wp-json/wp/v2/';
+const apiUrl = 'https://www.your-wordpress-url.com/wp-json/wp/v2/';
 
 console.log('Importing data from Wordpress...');
 
