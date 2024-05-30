@@ -150,15 +150,13 @@ async function fetchPosts() {
   const categoriesFileContent = await fs.promises.readFile(categoriesFile, 'utf8');
   const categories = JSON.parse(categoriesFileContent);
 
-  const downloadPostImage = async src => {
-    const destinationFolder = path.resolve(process.cwd(), 'public', 'images', 'posts');
+  const downloadPostImage = async (src, pathToPostFolder) => {
     const fileName = path.basename(src).split('?')[0];
-    const destinationFile = path.resolve(destinationFolder, fileName);
-    const imagePath = `/images/posts/${fileName}`;
+    const destinationFile = path.resolve(pathToPostFolder, fileName);
 
     if (fs.existsSync(destinationFile)) {
       console.log(`Post image "${destinationFile}" already exists, skipping...`);
-      return imagePath;
+      return fileName;
     }
 
     const imageDownloaded = await downloadImage(src, destinationFile);
@@ -167,7 +165,7 @@ async function fetchPosts() {
       imagesNotDownloaded.push(src);
     }
 
-    return imageDownloaded ? imagePath : undefined;
+    return imageDownloaded ? fileName : undefined;
   };
 
   const cleanUpHtml = html => {
@@ -194,14 +192,13 @@ async function fetchPosts() {
     return $.html();
   };
 
-
-  const downloadAndUpdateImages = async html => {
+  const downloadAndUpdateImages = async (html, pathToPostFolder) => {
     const $ = cheerio.load(html);
     const images = $('img');
 
     for (const image of images) {
       const src = $(image).attr('src');
-      const newSrc = await downloadPostImage(src);
+      const newSrc = await downloadPostImage(src, pathToPostFolder);
       $(image).attr('src', newSrc);
     }
 
@@ -214,11 +211,18 @@ async function fetchPosts() {
 
     for (const post of posts) {
       const postTitle = convertEscapedAscii(post.title.rendered);
+
       console.log('Importing post:', postTitle);
 
+      const pathToPostFolder = path.resolve(dataDirectory, 'posts', post.slug);
+      
+      if (!fs.existsSync(pathToPostFolder)) {
+        await fs.promises.mkdir(pathToPostFolder, { recursive: true });
+      }
+      
       const postAuthor = authors.find(author => post.author === author.wordpressId);
       const postCategories = categories.filter(category => post.categories.includes(category.wordpressId));
-      const titleImage = await downloadPostImage(post.jetpack_featured_media_url);
+      const titleImage = await downloadPostImage(post.jetpack_featured_media_url, pathToPostFolder);
       const tags = [];
 
       for (const tag of post.tags) {
@@ -240,17 +244,11 @@ async function fetchPosts() {
         wordpressId: post.id,
       };
 
-      const pathToPostFolder = path.resolve(dataDirectory, 'posts', post.slug);
-
-      if (!fs.existsSync(pathToPostFolder)) {
-        await fs.promises.mkdir(pathToPostFolder);
-      }
-
       const metaDataFile = path.resolve(pathToPostFolder, 'meta.json');
       await fs.promises.writeFile(metaDataFile, JSON.stringify(metaData, null, 2));
 
       const cleanedContent = cleanUpHtml(post.content.rendered);
-      const htmlWithImages = await downloadAndUpdateImages(cleanedContent);
+      const htmlWithImages = await downloadAndUpdateImages(cleanedContent, pathToPostFolder);
 
       const turndownService = new TurndownService({
         bulletListMarker: '-',
