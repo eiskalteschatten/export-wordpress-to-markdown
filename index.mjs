@@ -14,7 +14,7 @@ import * as cheerio from 'cheerio';
 
 import { downloadImage, convertEscapedAscii } from './utils.mjs';
 
-const apiUrl = 'https://www.your-wordpress-url-here.com/wp-json/wp/v2/';
+const apiUrl = 'https://blog.alexseifert.com/wp-json/wp/v2/';
 
 console.log('Importing data from Wordpress...');
 
@@ -232,8 +232,7 @@ async function fetchPosts() {
         status: post.status === 'publish' ? 'published' : 'draft',
         authors: [postAuthor.id],
         titleImage,
-        excerpt: post.yoast_head_json.description,
-        metaDescription: post.yoast_head_json.description,
+        excerpt: post.excerpt.rendered,
         categories: postCategories.map(category => category.id),
         tags,
         publishedDate: post.date,
