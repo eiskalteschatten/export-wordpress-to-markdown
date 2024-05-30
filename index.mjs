@@ -29,6 +29,10 @@ const tagsUrl = `${apiUrl}tags`;
 
 const imagesNotDownloaded = [];
 
+if (!fs.existsSync(dataDirectory)) {
+  fs.mkdirSync(dataDirectory);
+}
+
 async function fetchAuthors() {
   console.log('Importing authors...');
 
