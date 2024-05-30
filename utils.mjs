@@ -29,3 +29,7 @@ export async function downloadImage(imageUrl, destination) {
 export function convertEscapedAscii(string) {
   return string.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec));
 }
+
+export function stripHtml(string) {
+  return string.replace(/<[^>]*>/g, '');
+}
