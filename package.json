@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/eiskalteschatten/export-wordpress-to-markdown/issues"
   },
-  "homepage": "https://github.com/eiskalteschatten/export-wordpress-to-markdown#readme"
+  "homepage": "https://github.com/eiskalteschatten/export-wordpress-to-markdown#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "turndown": "^7.2.0"
+  }
 }
