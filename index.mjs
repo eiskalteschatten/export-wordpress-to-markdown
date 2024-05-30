@@ -16,7 +16,7 @@ import { downloadImage, convertEscapedAscii, stripHtml } from './utils.mjs';
 
 const apiUrl = 'https://www.your-wordpress-url.com/wp-json/wp/v2/';
 
-console.log('Importing data from Wordpress...');
+console.log('Exporting data from Wordpress...');
 
 const dataDirectory = path.resolve(process.cwd(), 'data');
 const categoriesFile = path.resolve(dataDirectory, 'categories.json');
@@ -35,7 +35,7 @@ if (!fs.existsSync(dataDirectory)) {
 }
 
 async function fetchAuthors() {
-  console.log('Importing authors...');
+  console.log('Exporting authors...');
 
   let newAuthors = [];
 
@@ -52,7 +52,7 @@ async function fetchAuthors() {
     const authors = await response.json();
 
     for (const author of authors) {
-      console.log('Importing author:', author.name);
+      console.log('Exporting author:', author.name);
 
       const existingAuthorIndex = newAuthors.findIndex(existingAuthor => existingAuthor.id === author.slug);
 
@@ -92,7 +92,7 @@ async function fetchAuthors() {
 }
 
 async function fetchCategories() {
-  console.log('Importing categories...');
+  console.log('Exporting categories...');
 
   let newCategories = [];
 
@@ -113,7 +113,7 @@ async function fetchCategories() {
         continue;
       }
 
-      console.log('Importing category:', category.name);
+      console.log('Exporting category:', category.name);
 
       const existingCategoryIndex = newCategories.findIndex(existingCategory => existingCategory.id === category.slug);
 
@@ -140,7 +140,7 @@ async function fetchCategories() {
 }
 
 async function fetchPosts() {
-  console.log('Importing posts...');
+  console.log('Exporting posts...');
 
   const totalPagesResponse = await fetch(postsUrl);
   const totalPages = totalPagesResponse.headers.get('x-wp-totalpages');
@@ -213,7 +213,7 @@ async function fetchPosts() {
     for (const post of posts) {
       const postTitle = convertEscapedAscii(post.title.rendered);
 
-      console.log('Importing post:', postTitle);
+      console.log('Exporting post:', postTitle);
 
       const pathToPostFolder = path.resolve(dataDirectory, 'posts', post.slug);
       
@@ -290,4 +290,4 @@ if (imagesNotDownloaded.length > 0) {
   console.log(JSON.stringify(imagesNotDownloaded, null, 2));
 }
 
-console.log('Data successfully imported from Wordpress!');
+console.log('Data successfully exported from Wordpress!');
