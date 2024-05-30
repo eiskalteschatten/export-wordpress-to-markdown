@@ -1,0 +1,19 @@
+{
+  "name": "export-wordpress-to-markdown",
+  "version": "1.0.0",
+  "description": "This is a script that imports WordPress posts and their images to Markdown files.",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eiskalteschatten/export-wordpress-to-markdown.git"
+  },
+  "author": "Alex Seifert",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eiskalteschatten/export-wordpress-to-markdown/issues"
+  },
+  "homepage": "https://github.com/eiskalteschatten/export-wordpress-to-markdown#readme"
+}
