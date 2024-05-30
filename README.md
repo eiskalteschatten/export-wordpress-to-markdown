@@ -16,6 +16,10 @@ Once you've cloned the repository, you just need to follow the following steps:
 
 That's it. The script will create a folder called `data` where everything will be saved.
 
+## More Details
+
+See my blog post about this script for more details about my motivations behind it: https://blog.alexseifert.com/2024/05/30/a-script-for-exporting-wordpress-to-markdown/
+
 --
 
 Alex Seifert
