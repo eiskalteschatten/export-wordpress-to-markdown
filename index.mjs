@@ -1,12 +1,3 @@
-/*
-  1. Import categories and authors (and author avatars) -- only those that have posts
-  2. Import posts with images and link them to the categories and authors. Also import tags.
-
-  Notes:
-    - Think about pagination
-    - Think about post status
-*/
-
 import fs from 'node:fs';
 import path from 'node:path';
 import TurndownService from 'turndown';
