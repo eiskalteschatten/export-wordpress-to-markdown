@@ -4,7 +4,7 @@
   "description": "This is a script that imports WordPress posts and their images to Markdown files.",
   "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.mjs"
   },
   "repository": {
     "type": "git",
