@@ -148,6 +148,10 @@ async function fetchPosts() {
   const categories = JSON.parse(categoriesFileContent);
 
   const downloadPostImage = async (src, pathToPostFolder) => {
+    if (!src || pathToPostFolder) {
+      return;
+    }
+
     const fileName = path.basename(src).split('?')[0];
     const destinationFile = path.resolve(pathToPostFolder, fileName);
 
