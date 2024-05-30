@@ -6,7 +6,7 @@ It will also export authors, categories and tags to JSON files. These will be li
 
 ## Usage
 
-The script is easy to use. It only requires Node.js 20+ (lower versions might work, but aren't tested).
+The script is easy to use. It requires Node.js 18+ (lower versions might work, but aren't tested).
 
 Once you've cloned the repository, you just need to follow the following steps:
 
