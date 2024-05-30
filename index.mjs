@@ -26,6 +26,7 @@ const authorsUrl = `${apiUrl}users`;
 const categoriesUrl = `${apiUrl}categories`;
 const postsUrl = `${apiUrl}posts`;
 const tagsUrl = `${apiUrl}tags`;
+const mediaUrl = `${apiUrl}media`;
 
 const imagesNotDownloaded = [];
 
@@ -222,9 +223,14 @@ async function fetchPosts() {
       
       const postAuthor = authors.find(author => post.author === author.wordpressId);
       const postCategories = categories.filter(category => post.categories.includes(category.wordpressId));
-      const titleImage = await downloadPostImage(post.jetpack_featured_media_url, pathToPostFolder);
+      
+      const titleImageId = post.featured_media;
+      const titleImageResponse = await fetch(`${mediaUrl}/${titleImageId}`);
+      const titleImageJson = await titleImageResponse.json();
+      const titleImage = await downloadPostImage(titleImageJson.source_url, pathToPostFolder);
+      
       const tags = [];
-
+      
       for (const tag of post.tags) {
         const tagId = await fetchTag(tag);
         tags.push(tagId);
