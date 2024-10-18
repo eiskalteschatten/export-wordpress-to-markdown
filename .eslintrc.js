@@ -67,7 +67,6 @@ module.exports = {
       'quotes': ['error', 'double'],
       'semi': ['error', 'never'],
       'comma-dangle': ['error', 'never'],
-      '@typescript-eslint/semi': ['off'],
     },
   }],
   settings: {
@@ -75,9 +74,6 @@ module.exports = {
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
         moduleDirectory: ['node_modules', 'src/'],
-      },
-      typescript: {
-        alwaysTryTypes: true, // always try to resolve types under `<roo/>@types` directory even if it doesn't contain any source code, like `@types/unist`
       },
     },
   },
