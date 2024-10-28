@@ -5,7 +5,11 @@ import * as cheerio from 'cheerio';
 
 import { downloadImage, convertEscapedAscii, stripHtml } from './utils.mjs';
 
-const apiUrl = 'https://www.your-wordpress-url.com/wp-json/wp/v2/';
+// If you self-host internal network with known expired certificate
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
+const baseUrl = 'https://www.your-wordpress-url.com';
+const apiUrl = baseUrl + '/wp-json/wp/v2/';
 
 console.log('Exporting data from Wordpress...');
 
@@ -21,13 +25,14 @@ const tagsUrl = `${apiUrl}tags`;
 const mediaUrl = `${apiUrl}media`;
 
 const imagesNotDownloaded = [];
+const postsImported = new Set();
 
 if (!fs.existsSync(dataDirectory)) {
   fs.mkdirSync(dataDirectory);
 }
 
 async function fetchAuthors() {
-  console.log('Exporting authors...');
+  console.log('Exporting authors:');
 
   if (!fs.existsSync(authorsDirectory)) {
     await fs.promises.mkdir(authorsDirectory);
@@ -42,6 +47,7 @@ async function fetchAuthors() {
 
   const totalPagesResponse = await fetch(authorsUrl);
   const totalPages = totalPagesResponse.headers.get('x-wp-totalpages');
+  console.log('  totalPages', totalPages);
 
   const importData = async page => {
     const response = await fetch(`${authorsUrl}?page=${page}`);
@@ -58,13 +64,19 @@ async function fetchAuthors() {
         continue;
       }
 
-      const extention = path.extname(author.avatar_urls[96]).split('&')[0];
-      const avatarFile = `${author.slug}${extention}`;
-      const avatarFilePath = path.resolve(authorsDirectory, avatarFile);
-      const imageDownloaded = await downloadImage(author.avatar_urls[96], avatarFilePath);
+      let imageDownloaded;
 
-      if (!imageDownloaded) {
-        imagesNotDownloaded.push(author.avatar_urls[96]);
+      if (author.avatar_urls) {
+        const extention = path.extname(author.avatar_urls[96]).split('&')[0];
+        //                                    ^^^^^^^^^^^^^^^
+        //                                    | This is overly specific for people who doesn't have this feature
+        const avatarFile = `${author.slug}${extention}`;
+        const avatarFilePath = path.resolve(authorsDirectory, avatarFile);
+        imageDownloaded = await downloadImage(author.avatar_urls[96], avatarFilePath);
+
+        if (!imageDownloaded) {
+          imagesNotDownloaded.push(author.avatar_urls[96]);
+        }
       }
 
       newAuthors.push({
@@ -81,6 +93,7 @@ async function fetchAuthors() {
   };
 
   for (let page = 1; page <= totalPages; page++) {
+    console.log(`---- Authors page ${page}/${totalPages} ----`)
     await importData(page);
   }
 
@@ -129,6 +142,7 @@ async function fetchCategories() {
   };
 
   for (let page = 1; page <= totalPages; page++) {
+    console.log(`---- Categories page ${page}/${totalPages} ----`)
     await importData(page);
   }
 
@@ -136,10 +150,12 @@ async function fetchCategories() {
 }
 
 async function fetchPosts() {
-  console.log('Exporting posts...');
+  console.log('Exporting posts:');
 
   const totalPagesResponse = await fetch(postsUrl);
   const totalPages = totalPagesResponse.headers.get('x-wp-totalpages');
+
+  console.log('  totalPages:', totalPages);
 
   const authorsFileContent = await fs.promises.readFile(authorsFile, 'utf8');
   const authors = JSON.parse(authorsFileContent);
@@ -160,6 +176,10 @@ async function fetchPosts() {
       return fileName;
     }
 
+    if (!/^http/.test(src)) {
+      src = baseUrl + src;
+    }
+    console.log('before imageDownloaded(src, destination)', src, destinationFile)
     const imageDownloaded = await downloadImage(src, destinationFile);
 
     if (!imageDownloaded) {
@@ -207,13 +227,21 @@ async function fetchPosts() {
   };
 
   const importData = async page => {
-    const response = await fetch(`${postsUrl}?page=${page}`);
+    const resourceUrl = `${postsUrl}?page=${page}`
+    const response = await fetch(resourceUrl);
     const posts = await response.json();
+    console.log('importData(url)', resourceUrl);
 
     for (const post of posts) {
       const postTitle = convertEscapedAscii(post.title.rendered);
 
-      console.log('Exporting post:', postTitle);
+      console.log('\nExporting post:');
+      console.log('  title:', postTitle);
+      console.log('    url:', post.link);
+      console.log('   slug:', post.slug);
+      console.log('   type:', post.type);
+      console.log(' status:', post.type);
+      console.log('   date:', post.date);
 
       const pathToPostFolder = path.resolve(dataDirectory, 'posts', post.slug);
 
@@ -267,10 +295,17 @@ async function fetchPosts() {
       const content = turndownService.turndown(htmlWithImages);
       const contentFile = path.resolve(pathToPostFolder, 'index.md');
       await fs.promises.writeFile(contentFile, content);
+      if (!postsImported.has(post.link)) {
+        postsImported.add(post.link)
+      } else {
+        const message = 'Something is not right, it apears your WP-API is returning the same posts in different pages';
+        throw new Error(message);
+      }
     }
   };
 
   for (let page = 1; page <= totalPages; page++) {
+    console.log(`---- Posts page ${page}/${totalPages} ----`)
     await importData(page);
   }
 }
@@ -289,5 +324,7 @@ if (imagesNotDownloaded.length > 0) {
   console.log('The following images could not be downloaded:');
   console.log(JSON.stringify(imagesNotDownloaded, null, 2));
 }
+
+console.log('Posts Imported', postsImported);
 
 console.log('Data successfully exported from Wordpress!');
